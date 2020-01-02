@@ -1,0 +1,11 @@
+name: SpawnerPlugin
+version: 1.0
+main: com.github.mlefeb01.spawners.SpawnerPlugin
+author: Matt Lefebvre (github.com/mlefeb01)
+depend: [Vault]
+load: POSTWORLD
+
+commands:
+  spawner:
+    usage: /spawner
+    description: The main command used for the plugin
