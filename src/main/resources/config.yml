@@ -10,6 +10,10 @@ spawners:
   # Spawner lock, set to true or false to enable/disable the placement of spawners. Useful in situations where you
   # want to prevent placing spawners during certain periods of time, e.g. - 24h before payouts you can't place spawners
   lock: false
+  # Toggle whether a spawner's type can be changed by right clicking with a mob egg (if the player has a permission)
+  change:
+    enabled: true
+    permission: "spawners.change"
   # The chance from a spawner to drop from a normal piece of tnt or a normal creeper egg
   explode-drop-chance:
     CREEPER: 50

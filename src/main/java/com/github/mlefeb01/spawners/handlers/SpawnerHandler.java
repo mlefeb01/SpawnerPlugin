@@ -2,6 +2,7 @@ package com.github.mlefeb01.spawners.handlers;
 
 import com.github.mlefeb01.spawners.DataManager;
 import com.github.mlefeb01.spawners.FileManager;
+import com.github.mlefeb01.spawners.events.SpawnerChangeEvent;
 import com.github.mlefeb01.spawners.events.SpawnerExplodeEvent;
 import com.github.mlefeb01.spawners.events.SpawnerMineEvent;
 import com.github.mlefeb01.spawners.events.SpawnerPlaceEvent;
@@ -10,6 +11,7 @@ import de.tr7zw.nbtapi.NBTItem;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -22,9 +24,11 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -319,6 +323,61 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
                 // Grab the type of mob spawned by said spawner, and new spawner item that matches its type at the blocks location
                 block.getWorld().dropItem(block.getLocation(), createSpawner(spawnerExplodeEvent.getSpawnerType(), explodeTime));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSpawnerInteract(PlayerInteractEvent event) {
+        // Make sure the player interaction was a player right clicking a block
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        // Make sure the clicked block was a mob spawner
+        final Block block = event.getClickedBlock();
+        if (block.getType() != Material.MOB_SPAWNER) {
+            return;
+        }
+
+        // Make sure the player is holding a spawn egg
+        final Player player = event.getPlayer();
+        final ItemStack playerItem = player.getItemInHand();
+        if (playerItem == null || playerItem.getType() == Material.AIR || playerItem.getType() != Material.MONSTER_EGG) {
+            return;
+        }
+
+        // Check if changing spawners via spawn egg is enabled in the config
+        if (!config.getBoolean("spawners.change.enabled")) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // Check if the player has permission to change spawners with spawn eggs
+        if (!player.hasPermission(config.getString("spawners.change.permission"))) {
+            event.setCancelled(true);
+            return;
+        }
+
+        // Fire the SpawnerChangeEvent and handle the rest of the event
+        final CreatureSpawner spawner = (CreatureSpawner) block.getState();
+        final SpawnerChangeEvent changeEvent = new SpawnerChangeEvent(
+                player,
+                spawner,
+                Utils.getEntityTypeFromSpawnEgg(playerItem.getDurability())
+        );
+        Bukkit.getPluginManager().callEvent(changeEvent);
+        if (changeEvent.isCancelled()) {
+            return;
+        }
+
+        // Change the spawner type and remove the spawn egg from the player if they are in survival
+        spawner.setSpawnedType(changeEvent.getType());
+        if (player.getGameMode() == GameMode.SURVIVAL) {
+            if (playerItem.getAmount() == 1) {
+                player.setItemInHand(null);
+            } else {
+                playerItem.setAmount(playerItem.getAmount() - 1);
             }
         }
     }
