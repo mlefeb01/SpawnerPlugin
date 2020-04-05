@@ -7,7 +7,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 
 public class SpawnerMineEvent extends PlayerEvent implements Cancellable {
-    private Player player;
     private EntityType spawnerType;
     private double tax;
     private double chanceToMine;
@@ -16,7 +15,6 @@ public class SpawnerMineEvent extends PlayerEvent implements Cancellable {
 
     public SpawnerMineEvent(Player player, EntityType spawnerType, double tax, double chanceToMine) {
         super(player);
-        this.player = player;
         this.isCancelled = false;
         this.spawnerType = spawnerType;
         this.tax = tax;

@@ -7,14 +7,12 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 
 public class SpawnerPlaceEvent extends PlayerEvent implements Cancellable {
-    private Player player;
     private EntityType spawnerType;
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean isCancelled;
 
     public SpawnerPlaceEvent(Player player, EntityType spawnerType) {
         super(player);
-        this.player = player;
         this.isCancelled = false;
         this.spawnerType = spawnerType;
     }
