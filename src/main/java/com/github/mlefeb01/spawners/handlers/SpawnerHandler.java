@@ -9,11 +9,9 @@ import com.github.mlefeb01.spawners.events.SpawnerPlaceEvent;
 import com.github.mlefeb01.spawners.utils.Utils;
 import de.tr7zw.nbtapi.NBTItem;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,6 +20,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -134,6 +133,42 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
     public boolean isCustomSpawner(ItemStack item) {
         return item != null && new NBTItem(item).hasKey(NBT_SPAWNER_TYPE);
+    }
+
+    private void spawnMobOnSpawner(Player player, ItemStack playerItem, Block block, BlockFace face) {
+        final EntityType type = Utils.getEntityTypeFromSpawnEgg(playerItem.getDurability());
+
+        final Location loc = block.getLocation();
+        switch (face) {
+            case UP:
+                loc.add(0.5, 1, 0.5);
+                break;
+            case DOWN:
+                loc.add(0.5, -1, 0.5);
+                break;
+            case NORTH:
+                loc.add(0.5, 0, -0.5);
+                break;
+            case EAST:
+                loc.add(1.5, 0, 0.5);
+                break;
+            case SOUTH:
+                loc.add(0.5, 0, 1.5);
+                break;
+            case WEST:
+                loc.add(-0.5, 0, 0.5);
+                break;
+        }
+
+        block.getWorld().spawnEntity(loc, type);
+
+        if (player.getGameMode() == GameMode.SURVIVAL) {
+            if (playerItem.getAmount() == 1) {
+                player.setItemInHand(null);
+            } else {
+                playerItem.setAmount(playerItem.getAmount() - 1);
+            }
+        }
     }
 
     @EventHandler
@@ -347,15 +382,21 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             return;
         }
 
+        /*
+        Cancel the event at this point because whether the feature is not enabled, the player does not have permission,
+        or the player does have permission the event is going to be cancelled so this remove 3 calls to event#setCancelled
+         */
+        event.setCancelled(true);
+
         // Check if changing spawners via spawn egg is enabled in the config
         if (!config.getBoolean("spawners.change.enabled")) {
-            event.setCancelled(true);
+            spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
             return;
         }
 
         // Check if the player has permission to change spawners with spawn eggs
         if (!player.hasPermission(config.getString("spawners.change.permission"))) {
-            event.setCancelled(true);
+            spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
             return;
         }
 
@@ -373,6 +414,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
         // Change the spawner type and remove the spawn egg from the player if they are in survival
         spawner.setSpawnedType(changeEvent.getType());
+        spawner.update();
         if (player.getGameMode() == GameMode.SURVIVAL) {
             if (playerItem.getAmount() == 1) {
                 player.setItemInHand(null);
