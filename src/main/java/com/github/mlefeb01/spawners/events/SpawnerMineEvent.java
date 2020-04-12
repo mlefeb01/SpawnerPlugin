@@ -1,5 +1,6 @@
 package com.github.mlefeb01.spawners.events;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -12,13 +13,15 @@ public class SpawnerMineEvent extends PlayerEvent implements Cancellable {
     private double chanceToMine;
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean isCancelled;
+    private final Block spawner;
 
-    public SpawnerMineEvent(Player player, EntityType spawnerType, double tax, double chanceToMine) {
+    public SpawnerMineEvent(Player player, EntityType spawnerType, double tax, double chanceToMine, Block spawner) {
         super(player);
         this.isCancelled = false;
         this.spawnerType = spawnerType;
         this.tax = tax;
         this.chanceToMine = chanceToMine;
+        this.spawner = spawner;
     }
 
     public boolean isCancelled() {
@@ -59,6 +62,10 @@ public class SpawnerMineEvent extends PlayerEvent implements Cancellable {
 
     public void setChanceToMine(double chanceToMine) {
         this.chanceToMine = chanceToMine;
+    }
+
+    public Block getSpawner() {
+        return this.spawner;
     }
 
 }

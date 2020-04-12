@@ -206,7 +206,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         // Call the SpawnerMineEvent and check if its cancelled
         final EntityType tempType = ((CreatureSpawner) block.getState()).getSpawnedType();
         final SpawnerMineEvent spawnerMineEvent = new SpawnerMineEvent(player, tempType,
-                (config.getBoolean("spawners.tax.enabled")) ? spawnerTax.getOrDefault(tempType, 0.0) : 0.0, Math.random() * 100);
+                (config.getBoolean("spawners.tax.enabled")) ? spawnerTax.getOrDefault(tempType, 0.0) : 0.0, Math.random() * 100, block);
         Bukkit.getPluginManager().callEvent(spawnerMineEvent);
         if (spawnerMineEvent.isCancelled()) {
             return;
