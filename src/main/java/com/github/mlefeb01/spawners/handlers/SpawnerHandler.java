@@ -22,6 +22,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -171,7 +172,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onSpawnerMine(BlockBreakEvent event) {
         // Grab the event block and event player
         final Block block = event.getBlock();
@@ -269,7 +270,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         block.setType(Material.AIR);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onSpawnerPlace(BlockPlaceEvent event) {
         // Grab the event player and block
         final Player player = event.getPlayer();
@@ -332,8 +333,12 @@ public class SpawnerHandler implements Listener, CommandExecutor {
                 .replace("%type%", formatEntityName(spawnerPlaceEvent.getSpawnerType()))));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onSpawnrExplode(EntityExplodeEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+
         /*
         Same the time this explosion occured, so we can use the timestamp to group the spawner items together. If we were
         to not do this, each spawner would have a unique timestamp because of how System.currentTimeMillis() works and it
