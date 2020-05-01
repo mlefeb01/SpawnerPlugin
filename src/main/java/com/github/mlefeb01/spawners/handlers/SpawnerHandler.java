@@ -442,7 +442,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // Check if the player has the spawner command permission. None of these commands should be used by normal players
-        if (!sender.hasPermission("spawners.permissions.spawner-command")) {
+        if (!sender.hasPermission(config.getString("spawners.permissions.spawner-command"))) {
             sender.sendMessage(Utils.color(config.getString("spawners.messages.command-no-perm")));
             return true;
         }
