@@ -309,7 +309,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
         // Create the SpawnerPlaceEvent and call it. Make sure the event hasnt been cancelled before proceeding
         final EntityType tempType = EntityType.valueOf(nbtItem.hasKey(NBT_SPAWNER_TYPE) ? nbtItem.getString(NBT_SPAWNER_TYPE) : "PIG");
-        final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(player, tempType);
+        final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(player, tempType, event.getBlock());
         Bukkit.getPluginManager().callEvent(spawnerPlaceEvent);
         if (spawnerPlaceEvent.isCancelled()) {
             return;
