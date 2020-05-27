@@ -210,6 +210,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
                 (config.getBoolean("spawners.tax.enabled")) ? spawnerTax.getOrDefault(tempType, 0.0) : 0.0, Math.random() * 100, block);
         Bukkit.getPluginManager().callEvent(spawnerMineEvent);
         if (spawnerMineEvent.isCancelled()) {
+            event.setCancelled(true);
             return;
         }
 
@@ -312,6 +313,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(player, tempType, event.getBlock());
         Bukkit.getPluginManager().callEvent(spawnerPlaceEvent);
         if (spawnerPlaceEvent.isCancelled()) {
+            event.setCancelled(true);
             return;
         }
 
