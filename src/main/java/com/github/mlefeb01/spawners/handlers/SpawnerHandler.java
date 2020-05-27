@@ -20,7 +20,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -51,9 +50,11 @@ public class SpawnerHandler implements Listener, CommandExecutor {
     private final Map<EntityType, Double> spawnerTax;
     private final Map<EntityType, Double> dropChances;
     private final SimpleDateFormat expireFormat;
+    private final Map<Location, Long> spawnerLifetime;
 
     public SpawnerHandler(FileManager fileManager, DataManager dataManager, Set<EntityType> spawnerTypes, FileConfiguration config,
-                          Economy economy, Map<EntityType, Double> spawnerTax, Map<EntityType, Double> dropChances, SimpleDateFormat expireFormat) {
+                          Economy economy, Map<EntityType, Double> spawnerTax, Map<EntityType, Double> dropChances, SimpleDateFormat expireFormat,
+                          Map<Location, Long> spawnerExistence) {
         this.fileManager = fileManager;
         this.dataManager = dataManager;
         this.spawnerTypes = spawnerTypes;
@@ -62,6 +63,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         this.spawnerTax = spawnerTax;
         this.dropChances = dropChances;
         this.expireFormat = expireFormat;
+        this.spawnerLifetime = spawnerExistence;
     }
 
     private long calculateExpireTime(long startTime) {
@@ -71,6 +73,18 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             return expireTime - (expireTime % 3600000);
         }
         return expireTime;
+    }
+
+    private void lifetimeHelper(Location location, boolean put) {
+        if (!config.getBoolean("spawners.lifetime")) {
+            return;
+        }
+
+        if (put) {
+            spawnerLifetime.put(location, System.currentTimeMillis());
+        } else {
+            spawnerLifetime.remove(location);
+        }
     }
 
     /*
@@ -188,6 +202,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             // Check to see if the player is holding an item with silk touch
             final ItemStack playerItem = player.getItemInHand();
             if (playerItem == null || !playerItem.containsEnchantment(Enchantment.SILK_TOUCH)) {
+                lifetimeHelper(block.getLocation(), false);
                 return;
             }
 
@@ -216,6 +231,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         // Run % chance to actually drop the spawner from mining it
         final double r = spawnerMineEvent.getChanceToMine();
         if (!(r <= config.getDouble("spawners.mining-drop-chance"))) {
+            lifetimeHelper(block.getLocation(), false);
             player.sendMessage(Utils.color(config.getString("spawners.messages.failure-mined-spawner")));
             return;
         }
@@ -268,6 +284,9 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         player.sendMessage(Utils.color(config.getString("spawners.messages.success-mined-spawner")
                 .replace("%type%", formatEntityName(type))));
         block.setType(Material.AIR);
+
+        // Lifetime
+        lifetimeHelper(block.getLocation(), false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -331,6 +350,9 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         // Send a confirmation message to the player
         player.sendMessage(Utils.color(config.getString("spawners.messages.placed-spawner")
                 .replace("%type%", formatEntityName(spawnerPlaceEvent.getSpawnerType()))));
+
+        // Lifetime
+        lifetimeHelper(block.getLocation(), true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -350,6 +372,8 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         for (Block block : event.blockList()) {
             // Make sure the block is a spawner
             if (block.getType() == Material.MOB_SPAWNER) {
+                lifetimeHelper(block.getLocation(), false);
+
                 // Create the SpawnerExplodeEvent and call it
                 final SpawnerExplodeEvent spawnerExplodeEvent = new SpawnerExplodeEvent(
                         ((CreatureSpawner) block.getState()).getSpawnedType(), event.getEntity(), dropChances.getOrDefault(event.getEntityType(), 0.0));

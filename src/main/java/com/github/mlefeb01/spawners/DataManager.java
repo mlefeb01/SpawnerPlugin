@@ -1,6 +1,9 @@
 package com.github.mlefeb01.spawners;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -10,23 +13,28 @@ import java.util.*;
 
 public class DataManager {
     private final SpawnerPlugin plugin;
+    private final FileManager fileManager;
     private final Set<EntityType> spawnerTypes;
     private final Map<EntityType, Double> spawnerTax;
     private final Map<EntityType, Double> dropChances;
     private final SimpleDateFormat expireFormat;
+    private final Map<Location, Long> spawnerLifetime;
     private Economy economy;
 
-    public DataManager(SpawnerPlugin plugin) {
+    public DataManager(SpawnerPlugin plugin, FileManager fileManager) {
         this.plugin = plugin;
+        this.fileManager = fileManager;
         this.spawnerTypes = new LinkedHashSet<>();
         this.spawnerTax = new HashMap<>();
         this.dropChances = new HashMap<>();
         this.expireFormat = new SimpleDateFormat();
+        this.spawnerLifetime = new HashMap<>();
     }
 
     // Initializes one time load data (e.g. - from a JSON fle) and loads config data
-    public void initializeData(FileConfiguration configYml) {
+    public void initializeData(FileConfiguration configYml, Gson gson) {
         economy = loadEconomy();
+        spawnerLifetime.putAll(fileManager.loadMap(gson, fileManager.getJSONPath("spawners.json"), new TypeToken<HashMap<Location, Long>>(){}));
         reloadData(configYml);
     }
 
@@ -108,6 +116,10 @@ public class DataManager {
 
     public SimpleDateFormat getExpireFormat() {
         return expireFormat;
+    }
+
+    public Map<Location, Long> getSpawnerLifetime() {
+        return this.spawnerLifetime;
     }
 
     /*

@@ -1,5 +1,7 @@
 package com.github.mlefeb01.spawners;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -12,7 +14,7 @@ import java.util.Map;
 
 public class FileManager {
     private static final String[] YML_FILES = {"config.yml"};
-    private static final String[] JSON_FILES = {};
+    private static final String[] JSON_FILES = {"spawners.json"};
     private static final String[] DIRECTORIES = {};
     private final SpawnerPlugin plugin;
     private final Map<String, FileConfiguration> configFiles;
@@ -48,7 +50,7 @@ public class FileManager {
             final Path path = getJSONPath(jsonFile);
             if (!Files.exists(path)) {
                 try {
-                    Files.copy(getClass().getClassLoader().getResourceAsStream("data/" + jsonFile), path);
+                    Files.copy(getClass().getClassLoader().getResourceAsStream(jsonFile), path);
                 } catch (IOException e) {
                     plugin.getLogger().warning("FAILED TO CREATE " + jsonFile);
                 }
@@ -73,7 +75,7 @@ public class FileManager {
 
     // Returns the path a JSON file named fileName would be located in this plugin
     public Path getJSONPath(String fileName) {
-        return plugin.getDataFolder().toPath().resolve("data").resolve(fileName);
+        return plugin.getDataFolder().toPath().resolve(fileName);
     }
 
     // Reloads YML FileConfigurations without breaking references
@@ -83,6 +85,32 @@ public class FileManager {
                 configFiles.get(ymlFile).load(plugin.getDataFolder().toPath().toAbsolutePath().resolve(ymlFile).toFile());
             } catch (Exception e) {
             }
+        }
+    }
+
+    // Loads a map from a json file
+    public <K, V> HashMap<K, V> loadMap(Gson gson, Path file, TypeToken<? extends Map<K, V>> typeToken) {
+        final HashMap<K, V> map = new HashMap<>();
+
+        try (BufferedReader reader = Files.newBufferedReader(file)) {
+            map.putAll(gson.fromJson(reader, typeToken.getType()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
+    // Saves a map to a json file
+    public <K, V> void saveMap(Gson gson, Path file, Map<K, V> map) {
+        if (map == null) {
+            return;
+        }
+
+        try (Writer writer = new FileWriter(new File(file.toUri()))) {
+            gson.toJson(map, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

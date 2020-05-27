@@ -18,6 +18,10 @@ spawners:
   explode-drop-chance:
     CREEPER: 50
     PRIMED_TNT: 50
+  # Should the plugin keep track of how long a spawner has been in existence? (has many applications but one of the more
+  # prominent examples would be an efficient implementation of progressive f-top)
+  # NOTE: DISABLING THIS FEATURE WILL ALSO DISABLE THE API USAGE FOR THIS FEATURE, USE ACCORDINGLY
+  lifetime: true
   # Should spawners expire after a certain amount of time? this means that when a spawner is created, the player will have
   # a certain amount of time to place the spawner before the spawner becomes invalid (invalid means they cant place it)
   expire:
