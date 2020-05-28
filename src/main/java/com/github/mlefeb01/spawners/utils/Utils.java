@@ -29,7 +29,6 @@ public class Utils {
         return String.join(" ", splitString);
     }
 
-    // either gives the player the item, or if their inventory is full drops the item at their location
     public static void safeItemGive(Player player, ItemStack item) {
         if (player.getInventory().firstEmpty() == -1) {
             player.getWorld().dropItem(player.getLocation(), item);

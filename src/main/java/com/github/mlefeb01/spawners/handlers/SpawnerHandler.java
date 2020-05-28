@@ -133,7 +133,6 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         return createSpawner(spawned, System.currentTimeMillis());
     }
 
-    // Checks to see if a player already has a spawner of said type before
     private boolean playerHasSpawner(Player player, EntityType type) {
         final ItemStack targetSpawner = createSpawner(type);
 
@@ -188,11 +187,9 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSpawnerMine(BlockBreakEvent event) {
-        // Grab the event block and event player
         final Block block = event.getBlock();
         final Player player = event.getPlayer();
 
-        // Checks to see if the broken block is a mob spawner
         if (block.getType() != Material.MOB_SPAWNER) {
             return;
         }
@@ -235,8 +232,6 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             player.sendMessage(Utils.color(config.getString("spawners.messages.failure-mined-spawner")));
             return;
         }
-
-        // Handle the breaking of the block by canceling the block break event and setting the type of the block to air
         event.setCancelled(true);
 
         // Check if spawner tax is enabled and the spawners entity type is taxed
@@ -260,23 +255,13 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         final EntityType type = spawnerMineEvent.getSpawnerType();
         final ItemStack spawner = (spawnerTypes.contains(type) ? createSpawner(type) : createSpawner(EntityType.PIG));
         if (config.getBoolean("spawners.direclty-to-inventory")) {
-            /*
-            Check to see if the players inventory is full. This is done by checking to find a spawner of the same type
-            to stack with if the players inventory has an empty slot, then it c. If it is cancel the block break and send
-             an error msg
-             */
             if (!playerHasSpawner(player, type) && player.getInventory().firstEmpty() == -1) {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.inventory-full")));
                 return;
             }
-
-            // If the players inventory is NOT empty, add the spawner + send a message
             player.getInventory().addItem(spawner);
         } else {
-            /*
-            If add spawners directly to the players inventory is disabled, drop either the mined spawner if the type was
-            whitelisted or a pig spawner if the type is not whitelisted
-             */
+
             block.getWorld().dropItem(block.getLocation(), spawner);
         }
 
@@ -291,11 +276,9 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onSpawnerPlace(BlockPlaceEvent event) {
-        // Grab the event player and block
         final Player player = event.getPlayer();
         final Block block = event.getBlock();
 
-        // Check to see if the placed block was a mob spawner and the player is allowed to place the block
         if (block.getType() != Material.MOB_SPAWNER || event.isCancelled()) {
             return;
         }
@@ -310,15 +293,13 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         // Check to see if the spawner has expired
         final NBTItem nbtItem = new NBTItem(player.getItemInHand());
         if (config.getBoolean("spawners.expire.enabled")) {
-            // Get the spawners expireTime
-            final long expireTime = nbtItem.getLong(NBT_SPAWNER_EXPIRE);
-
             // Check if the spawner has an expire time, and the spawner is expired
+            final long expireTime = nbtItem.getLong(NBT_SPAWNER_EXPIRE);
             if (expireTime != -1 && expireTime < System.currentTimeMillis()) {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.expired-spawner")));
                 event.setCancelled(true);
                 return;
-                // Check if the spawner does NOT have an expire time and no expire spawners are blocked
+            // Check if the spawner does NOT have an expire time and no expire spawners are blocked
             } else if (expireTime == -1 && config.getBoolean("spawners.expire.block-no-expire-spawners")) {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.no-expire-spawner-blocked")));
                 event.setCancelled(true);
@@ -334,7 +315,6 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             return;
         }
 
-        // Create the spawner, set the spawner type, then update the block
         try {
             /*
             Try catch here for some casting error, I check if the block is a mob spawner before casting it to a CreatureSpawner
@@ -362,15 +342,12 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         }
 
         /*
-        Same the time this explosion occured, so we can use the timestamp to group the spawner items together. If we were
+        Save the time this explosion occured, so we can use the timestamp to group the spawner items together. If we were
         to not do this, each spawner would have a unique timestamp because of how System.currentTimeMillis() works and it
         would result in the players inventory getting filled too quickly
          */
         final long explodeTime = System.currentTimeMillis();
-
-        // Loop through all the blocks broken in the explode event
         for (Block block : event.blockList()) {
-            // Make sure the block is a spawner
             if (block.getType() == Material.MOB_SPAWNER) {
                 lifetimeHelper(block.getLocation(), false);
 
@@ -410,11 +387,6 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         if (playerItem == null || playerItem.getType() == Material.AIR || playerItem.getType() != Material.MONSTER_EGG) {
             return;
         }
-
-        /*
-        Cancel the event at this point because whether the feature is not enabled, the player does not have permission,
-        or the player does have permission the event is going to be cancelled so this remove 3 calls to event#setCancelled
-         */
         event.setCancelled(true);
 
         // Check if changing spawners via spawn egg is enabled in the config
@@ -456,12 +428,12 @@ public class SpawnerHandler implements Listener, CommandExecutor {
     /*
     Spawner Command
     /spawner - opens this menu
-    /spawner reload - reloads the configyml data
-    /spawner list - shows all the types of spawner
+    /spawner reload - reloads the config.yml data
+    /spawner list - shows all the types of available spawners
     /spawner give <player> <type> - gives the target player a spawner of type
-    /spawner give <player> <type> <amount> - gives the target player amount of type spawner
+    /spawner give <player> <type> <amount> - gives the target player amount of type spawner(s)
     /spawner all <type> - gives all online players type spawner
-    /spawner all <type> <amount> - gives all online players amount of type spawner
+    /spawner all <type> <amount> - gives all online players amount of type spawner(s)
      */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

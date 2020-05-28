@@ -94,10 +94,6 @@ public class DataManager {
         expireFormat.applyPattern(configYml.getString("spawners.expire.time-placeholder-format"));
     }
 
-    /*
-    Getter methods for all the methods above, loading important plugin data
-     */
-
     public Economy getEconomy() {
         return economy;
     }
@@ -121,9 +117,5 @@ public class DataManager {
     public Map<Location, Long> getSpawnerLifetime() {
         return this.spawnerLifetime;
     }
-
-    /*
-    End of Getter methods
-     */
 
 }

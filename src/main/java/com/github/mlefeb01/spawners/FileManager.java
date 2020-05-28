@@ -24,14 +24,12 @@ public class FileManager {
         this.configFiles = new HashMap<>();
     }
 
-    // Initializes the plugins data folder, the actual data folder, and the yml/json files
+    // Initializes the plugins data folder, directories, and yml/json files
     public void fileSetup() {
-        // Creates the "Jackpot" folder in the /plugins/ directory
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdir();
         }
 
-        // Check to see if all directories have been created
         for (String directory : DIRECTORIES) {
             final Path dataFolder = Paths.get(plugin.getDataFolder().toPath().toString(), directory);
             if (!Files.exists(dataFolder)) {
@@ -45,7 +43,6 @@ public class FileManager {
         }
 
 
-        // Check to see if the JSON files exist, if not create them
         for (String jsonFile : JSON_FILES) {
             final Path path = getJSONPath(jsonFile);
             if (!Files.exists(path)) {
@@ -57,7 +54,6 @@ public class FileManager {
             }
         }
 
-        // Check if YML files exist, and load them
         for (String ymlFile : YML_FILES) {
             final Path path = Paths.get(plugin.getDataFolder().toPath().toString(), ymlFile);
             if (!Files.exists(path)) {

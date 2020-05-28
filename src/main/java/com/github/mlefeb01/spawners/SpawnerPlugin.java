@@ -13,7 +13,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Map;
 
 /**
- * Minectaft Plugin that allows for mining spawners, exploding spawners, spawner tax, spawner expire, and more
+ * Minecraft Plugin that allows for mining spawners, exploding spawners, spawner tax, spawner expire, spawner lifetime, and more
  * @author Matt Lefebvre (github.com/mlefeb01)
  */
 public class SpawnerPlugin extends JavaPlugin {
