@@ -1,5 +1,5 @@
 # Spawner Plugin
-The all in one minecraft spawner plugin consisting of the following features...
+An all in one Minecraft spawner plugin consisting of the following features...
 * Mine Spawners with or without Silk Touch 
 * Spawners drop from explosions
 * 6 spawner commands
@@ -17,7 +17,7 @@ downloaded at https://dev.bukkit.org/projects/vault
 
 ## Custom Spigot Events
 This plugin adds 4 new events
-* SpawnerExplodeEvent - Fired when a spawner is destroye via explosion
+* SpawnerExplodeEvent - Fired when a spawner is destroyed via explosion
 * SpawnerMineEvent - Fired when a spawner is broken by a player
 * SpawnerPlaceEvent - Fired when a player places a mob spawner
 * SpawnerChangeEvent - Fired when a player changes a mob spawner with a mob egg
