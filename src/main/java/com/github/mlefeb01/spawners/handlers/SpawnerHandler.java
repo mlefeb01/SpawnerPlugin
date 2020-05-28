@@ -226,8 +226,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         }
 
         // Run % chance to actually drop the spawner from mining it
-        final double r = spawnerMineEvent.getChanceToMine();
-        if (!(r <= config.getDouble("spawners.mining-drop-chance"))) {
+        if (spawnerMineEvent.getChanceToMine() > config.getDouble("spawners.mining-drop-chance")) {
             lifetimeHelper(block.getLocation(), false);
             player.sendMessage(Utils.color(config.getString("spawners.messages.failure-mined-spawner")));
             return;
@@ -358,7 +357,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
                 // Run % chance to actually drop the spawner from explosion
                 final double r = ThreadLocalRandom.current().nextDouble(0, 101);
-                if (!(r <= spawnerExplodeEvent.getChance())) {
+                if (r > spawnerExplodeEvent.getChance()) {
                     continue;
                 }
 
