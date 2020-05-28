@@ -8,6 +8,7 @@ The all in one minecraft spawner plugin consisting of the following features...
 * Spawner Expire (Requires spawner items to be placed within a configurable time frame)
 * Spawner Whitelist (Choose what entity types can be spawners)
 * Spawner Lock (Toggle spawner placement)
+* Spawner Lifetime (The amount of time in milliseconds that a spawner has been placed for)
 
 ## Dependencies
 The only required dependency for this plugin is Vault, which can be
@@ -22,3 +23,16 @@ This plugin adds 4 new events
 
 In order to use these events in your plugin, you need to add this plugin as a dependency. 
 After doing that, you will be able to listen to these events in your own plugin!
+
+## SpawnerAPI
+To use the API create a reference to the SpawnerAPI singleton 
+~~~
+SpawnerPlugin.getSpawnerAPI()
+~~~
+After creating a reference, you can use the following methods to access a spawners lifetime.
+These methods will return the time the spawner has been placed for in milliseconds or -1 if the feature is disabled or 
+the block is not a spawner. 
+~~~
+public long getSpawnerLifetime(Location location)
+public long getSpawnerLifetime(Block block)
+~~~
