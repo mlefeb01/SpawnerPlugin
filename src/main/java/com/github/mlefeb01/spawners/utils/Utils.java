@@ -92,4 +92,22 @@ public class Utils {
         }
     }
 
+    public static String formatSecondsAsTime(int seconds) {
+        int w, d, h, m;
+
+        w = seconds / 604800;
+        seconds -= w * 604800;
+
+        d = seconds / 86400;
+        seconds -= d * 86400;
+
+        h = seconds / 3600;
+        seconds -= h * 3600;
+
+        m = seconds / 60;
+        seconds -= m * 60;
+
+        return String.format("%dw, %dd, %dh, %dm, %ds", w, d, h, m, seconds);
+    }
+
 }

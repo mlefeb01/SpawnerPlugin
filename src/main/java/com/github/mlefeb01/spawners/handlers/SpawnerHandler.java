@@ -382,44 +382,56 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         // Make sure the player is holding a spawn egg
         final Player player = event.getPlayer();
         final ItemStack playerItem = player.getItemInHand();
-        if (playerItem == null || playerItem.getType() == Material.AIR || playerItem.getType() != Material.MONSTER_EGG) {
-            return;
-        }
-        event.setCancelled(true);
-
-        // Check if changing spawners via spawn egg is enabled in the config
-        if (!config.getBoolean("spawners.change.enabled")) {
-            spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
+        if (playerItem == null || playerItem.getType() == Material.AIR) {
             return;
         }
 
-        // Check if the player has permission to change spawners with spawn eggs
-        if (!player.hasPermission(config.getString("spawners.change.permission"))) {
-            spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
-            return;
-        }
+        if (playerItem.getType() == Material.MONSTER_EGG) {
+            event.setCancelled(true);
 
-        // Fire the SpawnerChangeEvent and handle the rest of the event
-        final CreatureSpawner spawner = (CreatureSpawner) block.getState();
-        final SpawnerChangeEvent changeEvent = new SpawnerChangeEvent(
-                player,
-                spawner,
-                Utils.getEntityTypeFromSpawnEgg(playerItem.getDurability())
-        );
-        Bukkit.getPluginManager().callEvent(changeEvent);
-        if (changeEvent.isCancelled()) {
-            return;
-        }
-
-        // Change the spawner type and remove the spawn egg from the player if they are in survival
-        spawner.setSpawnedType(changeEvent.getType());
-        spawner.update();
-        if (player.getGameMode() == GameMode.SURVIVAL) {
-            if (playerItem.getAmount() == 1) {
-                player.setItemInHand(null);
-            } else {
-                playerItem.setAmount(playerItem.getAmount() - 1);
+            // Check if changing spawners via spawn egg is enabled in the config
+            if (!config.getBoolean("spawners.change.enabled")) {
+                spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
+                return;
             }
+
+            // Check if the player has permission to change spawners with spawn eggs
+            if (!player.hasPermission(config.getString("spawners.change.permission"))) {
+                spawnMobOnSpawner(player, playerItem, block, event.getBlockFace());
+                return;
+            }
+
+            // Fire the SpawnerChangeEvent and handle the rest of the event
+            final CreatureSpawner spawner = (CreatureSpawner) block.getState();
+            final SpawnerChangeEvent changeEvent = new SpawnerChangeEvent(
+                    player,
+                    spawner,
+                    Utils.getEntityTypeFromSpawnEgg(playerItem.getDurability())
+            );
+            Bukkit.getPluginManager().callEvent(changeEvent);
+            if (changeEvent.isCancelled()) {
+                return;
+            }
+
+            // Change the spawner type and remove the spawn egg from the player if they are in survival
+            spawner.setSpawnedType(changeEvent.getType());
+            spawner.update();
+            if (player.getGameMode() == GameMode.SURVIVAL) {
+                if (playerItem.getAmount() == 1) {
+                    player.setItemInHand(null);
+                } else {
+                    playerItem.setAmount(playerItem.getAmount() - 1);
+                }
+            }
+        } else if (playerItem.getType() == Material.WATCH && !playerItem.hasItemMeta() && config.getBoolean("spawners.lifetime")) {
+            Long time = spawnerLifetime.get(block.getLocation());
+            if (time == null) {
+                final long temp = System.currentTimeMillis();
+                spawnerLifetime.put(block.getLocation(), temp);
+                time = temp;
+            }
+
+            player.sendMessage(Utils.color(config.getString("spawners.messages.lifetime").replace("%time%", Utils.formatSecondsAsTime((int) ((System.currentTimeMillis() - time)/1000)))));
         }
     }
 

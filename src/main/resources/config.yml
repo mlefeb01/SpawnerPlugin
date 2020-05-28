@@ -156,3 +156,4 @@ spawners:
       - "&8&m-------------------------------------------"
     # the message sent from /spawner types, the %types% variable MUST be present for the message to format correctly
     list: "&fSpawner Types&8: %types%"
+    lifetime: "&fSpawner Lifetime&8: &6%time%"
