@@ -10,7 +10,6 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -65,8 +64,6 @@ public class SpawnerPlugin extends JavaPlugin {
     public void onDisable() {
         // Log to console the spawner plugin has been disabled
         getLogger().info("SpawnerPlugin has been disabled!");
-        final Object[] locs = dataManager.getSpawnerLifetime().keySet().toArray();
-        Arrays.stream(locs).forEach(k -> getLogger().info("" + spawnerAPI.getSpawnerLifetime((Location)k)));
         fileManager.saveMap(gson, fileManager.getJSONPath("spawners.json"), dataManager.getSpawnerLifetime());
     }
 
