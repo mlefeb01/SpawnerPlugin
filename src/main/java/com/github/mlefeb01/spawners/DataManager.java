@@ -47,7 +47,7 @@ public class DataManager {
     }
 
     // Loads the Vault Economy
-    public Economy loadEconomy() {
+    private Economy loadEconomy() {
         if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
             plugin.getLogger().warning("NO ECONOMY PLUGIN FOUND - SPAWNER PLUGIN WILL NOT WORK FULLY");
             return null;
@@ -70,7 +70,7 @@ public class DataManager {
     }
 
     // Loads the amounts of money each spawner type requires to mine (if enabled)
-    public void loadSpawnerTax(FileConfiguration configYml) {
+    private void loadSpawnerTax(FileConfiguration configYml) {
         spawnerTax.clear();
 
         configYml.getConfigurationSection("spawners.tax.costs").getKeys(false).forEach(mob ->
@@ -78,7 +78,7 @@ public class DataManager {
     }
 
     // Loads the chances for different exploding entity types to drop spawners
-    public void loadSpawnerDropChances(FileConfiguration configYml) {
+    private void loadSpawnerDropChances(FileConfiguration configYml) {
         dropChances.clear();
 
         configYml.getConfigurationSection("spawners.explode-drop-chance").getKeys(false).forEach(entity ->
@@ -86,7 +86,7 @@ public class DataManager {
     }
 
     // Loads the format in which the SimpleDateFormat should display the spawner items expire time
-    public void loadExpireFormat(FileConfiguration configYml) {
+    private void loadExpireFormat(FileConfiguration configYml) {
         final String timezone = configYml.getString("spawners.expire.timezone");
         if (!timezone.isEmpty()) {
             expireFormat.setTimeZone(TimeZone.getTimeZone(timezone));
