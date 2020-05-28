@@ -190,7 +190,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         final Block block = event.getBlock();
         final Player player = event.getPlayer();
 
-        if (block.getType() != Material.MOB_SPAWNER) {
+        if (block.getType() != Material.MOB_SPAWNER || event.isCancelled()) {
             return;
         }
 
@@ -209,11 +209,6 @@ public class SpawnerHandler implements Listener, CommandExecutor {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.no-permission-to-mine")));
                 return;
             }
-        }
-
-        // Check if the player is allowed to break the spawner
-        if (event.isCancelled()) {
-            return;
         }
 
         // Call the SpawnerMineEvent and check if its cancelled
