@@ -9,6 +9,7 @@ The all in one minecraft spawner plugin consisting of the following features...
 * Spawner Whitelist (Choose what entity types can be spawners)
 * Spawner Lock (Toggle spawner placement)
 * Spawner Lifetime (The amount of time in milliseconds that a spawner has been placed for)
+* View spawner lifetime by right clicking a spawner with a watch 
 
 ## Dependencies
 The only required dependency for this plugin is Vault, which can be
