@@ -234,18 +234,16 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         event.setCancelled(true);
 
         // Check if spawner tax is enabled and the spawners entity type is taxed
-        final double cost = spawnerMineEvent.getTax();
+        boolean withdraw = false;
         if (config.getBoolean("spawners.tax.enabled")) {
             // Check if the player has enough money
             final double balance = economy.getBalance(player);
-            if (balance < cost) {
+            if (balance < spawnerMineEvent.getTax()) {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.not-enough-money")
-                        .replace("%cost%", "" + cost).replace("%balance%", "" + balance)));
+                        .replace("%cost%", "" + spawnerMineEvent.getTax()).replace("%balance%", "" + balance)));
                 return;
             } else {
-                economy.withdrawPlayer(player, cost);
-                player.sendMessage(Utils.color(config.getString("spawners.messages.has-enough-money")
-                        .replace("%cost%", "" + cost)));
+                withdraw = true;
             }
 
         }
@@ -262,6 +260,11 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         } else {
 
             block.getWorld().dropItem(block.getLocation(), spawner);
+        }
+
+        if (withdraw) {
+            economy.withdrawPlayer(player, spawnerMineEvent.getTax());
+            player.sendMessage(Utils.color(config.getString("spawners.messages.has-enough-money").replace("%cost%", "" + spawnerMineEvent.getTax())));
         }
 
         // Send a confirmation message to the player that they just mined a spawner, and set the blocks type to air
