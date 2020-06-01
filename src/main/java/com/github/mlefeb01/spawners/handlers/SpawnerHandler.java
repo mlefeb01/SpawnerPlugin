@@ -310,6 +310,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(player, tempType, event.getBlock());
         Bukkit.getPluginManager().callEvent(spawnerPlaceEvent);
         if (spawnerPlaceEvent.isCancelled()) {
+            event.setCancelled(true);
             return;
         }
 

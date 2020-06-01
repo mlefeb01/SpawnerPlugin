@@ -30,7 +30,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
-    compile 'de.tr7zw:item-nbt-api-plugin:2.3.0'
+    compile 'de.tr7zw:item-nbt-api-plugin:2.3.1'
 }
 
 shadowJar {
