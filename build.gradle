@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
     id 'com.github.johnrengelman.shadow' version '4.0.2'
 }
 
@@ -41,6 +42,17 @@ shadowJar {
     dependencies {
         manifest {
             attributes("Main-Class": "com.github.mlefeb01.spawners.SpawnerPlugin")
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.github.mlefeb01.spawners'
+            artifactId = 'SpawnerPlugin'
+            version = '1.0'
+            from components.java
         }
     }
 }
