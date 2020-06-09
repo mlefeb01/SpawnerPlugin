@@ -1,51 +1,41 @@
 package com.github.mlefeb01.spawners.events;
 
-import org.bukkit.block.Block;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 
-public class SpawnerPlaceEvent extends PlayerEvent implements Cancellable {
+/**
+ * Event fired when a player places a spawner
+ */
+public class SpawnerPlaceEvent extends PlayerSpawnerEvent {
     private EntityType spawnerType;
-    private static final HandlerList HANDLERS = new HandlerList();
-    private boolean isCancelled;
-    private final Block spawner;
 
-    public SpawnerPlaceEvent(Player player, EntityType spawnerType, Block spawner) {
-        super(player);
-        this.isCancelled = false;
+    /**
+     * Constructor
+     * @param player player
+     * @param spawner spawner
+     * @param lifetime always 0 or -1 if the feature is disabled
+     * @param spawnerType spawnerType
+     */
+    public SpawnerPlaceEvent(Player player, CreatureSpawner spawner, long lifetime, EntityType spawnerType) {
+        super(player, spawner, lifetime);
         this.spawnerType = spawnerType;
-        this.spawner = spawner;
     }
 
-    public boolean isCancelled() {
-        return this.isCancelled;
-    }
-
-    public void setCancelled(boolean isCancelled) {
-        this.isCancelled = isCancelled;
-    }
-
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
+    /**
+     * Getter method for the type of spawner being placed
+     * @return type
+     */
     public EntityType getSpawnerType() {
         return spawnerType;
     }
 
+    /**
+     * Setter method for the type of spawner being placed
+     * @param spawnerType
+     */
     public void setSpawnerType(EntityType spawnerType) {
         this.spawnerType = spawnerType;
-    }
-
-    public Block getSpawner() {
-        return this.spawner;
     }
 
 }

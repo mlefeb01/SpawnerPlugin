@@ -75,6 +75,14 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         return expireTime;
     }
 
+    private long calculateLifetime(Block block) {
+        if (!config.getBoolean("spawners.lifetime")) {
+            return -1;
+        }
+        final long lifetime = spawnerLifetime.getOrDefault(block.getLocation(), -1L);
+        return lifetime == -1 ? -1 : System.currentTimeMillis() - lifetime;
+    }
+
     private void lifetimeHelper(Location location, boolean put) {
         if (!config.getBoolean("spawners.lifetime")) {
             return;
@@ -212,9 +220,16 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         }
 
         // Call the SpawnerMineEvent and check if its cancelled
-        final EntityType tempType = ((CreatureSpawner) block.getState()).getSpawnedType();
-        final SpawnerMineEvent spawnerMineEvent = new SpawnerMineEvent(player, tempType,
-                (config.getBoolean("spawners.tax.enabled")) ? spawnerTax.getOrDefault(tempType, 0.0) : 0.0, Math.random() * 100, block);
+        final CreatureSpawner spawner = (CreatureSpawner) block.getState();
+        final EntityType tempType = spawner.getSpawnedType();
+        final SpawnerMineEvent spawnerMineEvent = new SpawnerMineEvent(
+                player,
+                spawner,
+                calculateLifetime(block),
+                tempType,
+                (config.getBoolean("spawners.tax.enabled")) ? spawnerTax.getOrDefault(tempType, 0.0) : 0.0,
+                Math.random() * 100
+        );
         Bukkit.getPluginManager().callEvent(spawnerMineEvent);
         if (spawnerMineEvent.isCancelled()) {
             event.setCancelled(true);
@@ -246,16 +261,16 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
         // Create the spawner item then check to see whether to add the spawners directly to the players inventory, or drop naturally
         final EntityType type = spawnerMineEvent.getSpawnerType();
-        final ItemStack spawner = (spawnerTypes.contains(type) ? createSpawner(type) : createSpawner(EntityType.PIG));
+        final ItemStack spawnerItem = (spawnerTypes.contains(type) ? createSpawner(type) : createSpawner(EntityType.PIG));
         if (config.getBoolean("spawners.direclty-to-inventory")) {
             if (!playerHasSpawner(player, type) && player.getInventory().firstEmpty() == -1) {
                 player.sendMessage(Utils.color(config.getString("spawners.messages.inventory-full")));
                 return;
             }
-            player.getInventory().addItem(spawner);
+            player.getInventory().addItem(spawnerItem);
         } else {
 
-            block.getWorld().dropItem(block.getLocation(), spawner);
+            block.getWorld().dropItem(block.getLocation(), spawnerItem);
         }
 
         if (withdraw) {
@@ -306,25 +321,22 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         }
 
         // Create the SpawnerPlaceEvent and call it. Make sure the event hasnt been cancelled before proceeding
+        final CreatureSpawner spawner = (CreatureSpawner) block.getState();
         final EntityType tempType = EntityType.valueOf(nbtItem.hasKey(NBT_SPAWNER_TYPE) ? nbtItem.getString(NBT_SPAWNER_TYPE) : "PIG");
-        final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(player, tempType, event.getBlock());
+        final SpawnerPlaceEvent spawnerPlaceEvent = new SpawnerPlaceEvent(
+                player,
+                spawner,
+                0L,
+                tempType
+        );
         Bukkit.getPluginManager().callEvent(spawnerPlaceEvent);
         if (spawnerPlaceEvent.isCancelled()) {
             event.setCancelled(true);
             return;
         }
 
-        try {
-            /*
-            Try catch here for some casting error, I check if the block is a mob spawner before casting it to a CreatureSpawner
-            by getting the blocks block state. This should not be a cast error because CreatrueSpawner instanceof BlockState
-             */
-            final CreatureSpawner creatureSpawner = (CreatureSpawner) block.getState();
-            creatureSpawner.setSpawnedType(spawnerPlaceEvent.getSpawnerType());
-            creatureSpawner.update();
-        } catch (Exception e) {
-            return;
-        }
+        spawner.setSpawnedType(spawnerPlaceEvent.getSpawnerType());
+        spawner.update();
 
         // Send a confirmation message to the player
         player.sendMessage(Utils.color(config.getString("spawners.messages.placed-spawner")
@@ -348,11 +360,13 @@ public class SpawnerHandler implements Listener, CommandExecutor {
         final long explodeTime = System.currentTimeMillis();
         for (Block block : event.blockList()) {
             if (block.getType() == Material.MOB_SPAWNER) {
-                lifetimeHelper(block.getLocation(), false);
-
                 // Create the SpawnerExplodeEvent and call it
                 final SpawnerExplodeEvent spawnerExplodeEvent = new SpawnerExplodeEvent(
-                        ((CreatureSpawner) block.getState()).getSpawnedType(), event.getEntity(), dropChances.getOrDefault(event.getEntityType(), 0.0));
+                        calculateLifetime(block),
+                        ((CreatureSpawner) block.getState()).getSpawnedType(),
+                        event.getEntity(),
+                        dropChances.getOrDefault(event.getEntityType(), 0.0)
+                );
                 Bukkit.getPluginManager().callEvent(spawnerExplodeEvent);
 
                 // Run % chance to actually drop the spawner from explosion
@@ -363,6 +377,9 @@ public class SpawnerHandler implements Listener, CommandExecutor {
 
                 // Grab the type of mob spawned by said spawner, and new spawner item that matches its type at the blocks location
                 block.getWorld().dropItem(block.getLocation(), createSpawner(spawnerExplodeEvent.getSpawnerType(), explodeTime));
+
+                // Lifetime
+                lifetimeHelper(block.getLocation(), false);
             }
         }
     }
@@ -407,6 +424,7 @@ public class SpawnerHandler implements Listener, CommandExecutor {
             final SpawnerChangeEvent changeEvent = new SpawnerChangeEvent(
                     player,
                     spawner,
+                    calculateLifetime(block),
                     Utils.getEntityTypeFromSpawnEgg(playerItem.getDurability())
             );
             Bukkit.getPluginManager().callEvent(changeEvent);

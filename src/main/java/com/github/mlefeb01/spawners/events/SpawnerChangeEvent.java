@@ -3,47 +3,38 @@ package com.github.mlefeb01.spawners.events;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 
-public class SpawnerChangeEvent extends PlayerEvent implements Cancellable {
-    private static final HandlerList HANDLERS = new HandlerList();
-    private boolean isCancelled;
-    private final CreatureSpawner spawner;
+/**
+ * Event fired when a player attempts to change a spawner with a mob egg
+ */
+public class SpawnerChangeEvent extends PlayerSpawnerEvent {
     private EntityType type;
 
-    public SpawnerChangeEvent(Player player, CreatureSpawner spawner, EntityType type) {
-        super(player);
+    /**
+     * Constructor
+     * @param player player
+     * @param lifetime spawner lifetime in milliseconds or -1 if the feature is disabled
+     * @param spawner spawner
+     * @param type entity type
+     */
+    public SpawnerChangeEvent(Player player, CreatureSpawner spawner, long lifetime,  EntityType type) {
+        super(player, spawner, lifetime);
         this.player = player;
-        this.spawner = spawner;
         this.type = type;
     }
 
-    public boolean isCancelled() {
-        return this.isCancelled;
-    }
-
-    public void setCancelled(boolean isCancelled) {
-        this.isCancelled = isCancelled;
-    }
-
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
-    }
-
-    public CreatureSpawner getSpawner() {
-        return this.spawner;
-    }
-
+    /**
+     * Getter method for the type the spawner will be set to
+     * @return type
+     */
     public EntityType getType() {
         return this.type;
     }
 
+    /**
+     * Setter method for the type the spawner will be set to
+     * @param type type
+     */
     public void setType(EntityType type) {
         this.type = type;
     }
