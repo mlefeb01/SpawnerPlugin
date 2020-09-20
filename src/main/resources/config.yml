@@ -14,7 +14,7 @@ settings:
     enabled: true
     permission: "spawners.change"
   # The chance from a spawner to drop from a normal piece of tnt or a normal creeper egg
-  explode-drop-chance:
+  explode-drop-chances:
     CREEPER: 50
     PRIMED_TNT: 50
   # Should the plugin keep track of how long a spawner has been in existence? (has many applications but one of the more
