@@ -1,6 +1,5 @@
-# Minecraft Plugin that handles mining spawners with silk touch and other spawner interactions such as giving player
-# spawners, blowing them up, etc.
-spawners:
+# General settings within the plugin
+settings:
   # Should silk touch be required to mine spawners?
   require-silk-touch: true
   # The chance for a spawner to drop from mining it
@@ -9,9 +8,9 @@ spawners:
   direclty-to-inventory: true
   # Spawner lock, set to true or false to enable/disable the placement of spawners. Useful in situations where you
   # want to prevent placing spawners during certain periods of time, e.g. - 24h before payouts you can't place spawners
-  lock: false
+  spawner-lock: false
   # Toggle whether a spawner's type can be changed by right clicking with a mob egg (if the player has a permission)
-  change:
+  spawner-change:
     enabled: true
     permission: "spawners.change"
   # The chance from a spawner to drop from a normal piece of tnt or a normal creeper egg
@@ -41,119 +40,130 @@ spawners:
     time-placeholder-format: "MM/dd/yyyy hh:mm:ss aaa z"
     # The timezone which will be used for the "z" placeholders (leave empty "" to use default timezone UTC)
     timezone: "EST"
-  # The name format of the spawner item (this can be changed and the spawner wont break)
+  # The name format of the spawner item (this can be changed and spawner items wont break)
   name-format: "&e&l%type% &fSpawner"
-  # The lore format of the spawner item (this can be changed and the spawner wont break)
+  # The lore format of the spawner item (this can be changed and spawner items wont break)
   # %time% - the time this spawner has to be placed by, if the feature is enabled (N/A if disabled)
   lore-format:
     - "&cNote: This spawner must be placed"
     - "&cby %time%"
-  # Spawner tax: add a cost for mining certain spawner types
-  # Format: <entity_type>: <some double>
-  tax:
-    enabled: true
-    costs:
-      PIG: 3750.0
-      CHICKEN: 6250.0
-      SHEEP: 6250.0
-      COW: 12500.0
-      MUSHROOM_COW: 15000.0
-      CAVE_SPIDER: 28750.0
-      SPIDER: 28750.0
-      ZOMBIE: 28750.0
-      SKELETON: 28750.0
-      ENDERMAN: 125000.0
-      PIG_ZOMBIE: 187500.0
-      BLAZE: 187500.0
-      CREEPER: 187500.0
-      IRON_GOLEM: 500000.0
-      VILLAGER: 750000.0
-      GHAST: 1250000.0
-  # types of spawners that can be given by the command, and placed in game
-  whitelist:
-    - PIG
-    - CHICKEN
-    - SHEEP
-    - COW
-    - MUSHROOM_COW
-    - CAVE_SPIDER
-    - SPIDER
-    - ZOMBIE
-    - SKELETON
-    - PIG_ZOMBIE
-    - ENDERMAN
-    - BLAZE
-    - CREEPER
-    - IRON_GOLEM
-    - VILLAGER
-    - GHAST
-    - GIANT
-    - SLIME
-    - SILVERFISH
-    - MAGMA_CUBE
-    - ENDER_DRAGON
-    - BAT
-    - WITCH
-    - ENDERMITE
-    - GUARDIAN
-    - SNOWMAN
-    - OCELOT
-    - HORSE
-    - RABBIT
-  # All the permissions for the spawners plugin
-  permissions:
-    # The permission required to mine spawners with silk touch (potential donator perk???)
-    mine-with-silk: "spawners.silk"
-    # The permission to bypass spawner lock
-    bypass-lock: "karismic.bypassspawnerlock"
-    # The permission required to execute any of the spawner plugin commands
-    spawner-command: "spawners.command"
-  # All the message for the spawners plugin
-  messages:
-    # When the plugin is reloaded via the /spawner reload command
-    reload: "&a(!) Spawners has been reloaded!"
-    # When a spawner is mined but and % to drop passes
-    success-mined-spawner: "&7You have successfully mined a &e&l%type% &7spawner!"
-    # When a spawner is mined but the % to drop it fails
-    failure-mined-spawner: "&cYou were unsuccessful in attempting to mine that spawner."
-    # When a player attempts to mine a spawner with silk touch but lacks the permission to do so, this message is sent
-    no-permission-to-mine: "&c(!) You don't have permission to mine spawners with silk touch. Purchase a rank at <your store link>"
-    # The message sent when a spawner is placed
-    placed-spawner: "&7You have placed a &e&l%type% &7spawner!"
-    # The message sent when a spawner is placed, but the spawner has expired
-    expired-spawner: "&c(!) This spawner has expired, you are unable to place it!"
-    # the message sent when a player tries to place a spawner but the spawner lock is enabled
-    lock-enabled: "&c(!) Spawner lock is enabled! You are not allowed to place spawners while lock is enabled."
-    # This message is only applicable if the directly-to-inventory option is enabled. It will check to see if the players
-    # inventory is full before giving them the spawner
-    inventory-full: "&c(!) Your inventory is full! Clear some space before mining this spawner."
-    # When a player without the command permission tries to use any of the /spawner commands
-    command-no-perm: "&c(!) You lack the permission required to use this command!"
-    # When the /spawner command is used incorrectly
-    incorrect-usage: "&c(!) Incorrect /spawner command usage."
-    # The messages sent to the command sender / spawner receiver when the /spawner give command is used
-    give-spawner-sender: "&7%amount%x %type% spawners given to %player%"
-    give-spawner-receiver: "&7You have received &f%amount%x &e&l%type% &7spawners!"
-    # The messages sent to the command sender / spawner receivers when the /spawner all command is used
-    all-spawner-sender: "&7%amount%x %type% spawners given to ALL online players"
-    all-spawner-receiver: "&7You have received &f%amount%x &e&l%type% &7spawners!"
-    # When the player tries to mine a spawner, but doesn't have enough money (requires tax enabled)
-    not-enough-money: "&c(!) Failed to mine this spawner! Your Balance: %balance% Cost: %cost%"
-    # When the player tries to mine a spawner and has enough money (requires tax enabled)
-    has-enough-money: "&cSpawner Tax (-$%cost%)"
-    # The message sent from /spawner and /spawner help
-    command:
-      - "&8&m------------&8[&2&lSPAWNER COMMAND&8]&m------------"
-      - "&7<> &8- &fRequired Parameter"
-      - "&7[] &8- &fOptional Parameter"
-      - "&8&m-------------------------------------------"
-      - "&7/spawner &8- &fShows this message"
-      - "&7/spawner reload &8- Reloads the config"
-      - "&7/spawner help &8- &fShows this message"
-      - "&7/spawner list &8- &fShows all the possible spawner types"
-      - "&7/spawner give <player> <type> [amount] &8- &fGives target player a spawner of type"
-      - "&7/spawner all <type> [amount] &8- &fGives ALL online players type spawner"
-      - "&8&m-------------------------------------------"
-    # the message sent from /spawner types, the %types% variable MUST be present for the message to format correctly
-    list: "&fSpawner Types&8: %types%"
-    lifetime: "&fSpawner Lifetime&8: &6%time%"
+
+# Spawner tax: add a cost for mining certain spawner types
+# Format: <entity_type>: <some double>
+tax:
+  enabled: true
+  costs:
+    PIG: 3750.0
+    CHICKEN: 6250.0
+    SHEEP: 6250.0
+    COW: 12500.0
+    MUSHROOM_COW: 15000.0
+    CAVE_SPIDER: 28750.0
+    SPIDER: 28750.0
+    ZOMBIE: 28750.0
+    SKELETON: 28750.0
+    ENDERMAN: 125000.0
+    PIG_ZOMBIE: 187500.0
+    BLAZE: 187500.0
+    CREEPER: 187500.0
+    IRON_GOLEM: 500000.0
+    VILLAGER: 750000.0
+    GHAST: 1250000.0
+
+# types of spawners that can be given by the command, and placed in game
+whitelist:
+  - PIG
+  - CHICKEN
+  - SHEEP
+  - COW
+  - MUSHROOM_COW
+  - CAVE_SPIDER
+  - SPIDER
+  - ZOMBIE
+  - SKELETON
+  - PIG_ZOMBIE
+  - ENDERMAN
+  - BLAZE
+  - CREEPER
+  - IRON_GOLEM
+  - VILLAGER
+  - GHAST
+  - GIANT
+  - SLIME
+  - SILVERFISH
+  - MAGMA_CUBE
+  - ENDER_DRAGON
+  - BAT
+  - WITCH
+  - ENDERMITE
+  - GUARDIAN
+  - SNOWMAN
+  - OCELOT
+  - HORSE
+  - RABBIT
+
+# All the permissions for the spawners plugin
+permissions:
+  # The permission required to mine spawners with silk touch
+  mine-with-silk: "spawners.silk"
+  # The permission to bypass spawner lock
+  bypass-lock: "spawners.bypassspawnerlock"
+  # The permission required to execute any of the spawner plugin commands
+  spawner-command: "spawners.command"
+
+# All the message for the spawners plugin
+messages:
+  # When the plugin is reloaded via the /spawner reload command
+  reload: "&a(!) Spawners has been reloaded!"
+  # When a spawner is mined and % to drop passes
+  # Placeholders
+  # %type% - the type of spawner
+  success-mined-spawner: "&7You have successfully mined a &e&l%type% &7spawner!"
+  # When a spawner is mined but the % to drop it fails
+  failure-mined-spawner: "&cYou were unsuccessful in attempting to mine that spawner."
+  # When a player attempts to mine a spawner with silk touch but lacks the permission to do so, this message is sent
+  no-permission-to-mine: "&c(!) You don't have permission to mine spawners with silk touch. Purchase a rank at <your store link>"
+  # The message sent when a spawner is placed
+  # Placeholders
+  # %type% - the type of spawner
+  placed-spawner: "&7You have placed a &e&l%type% &7spawner!"
+  # The message sent when a spawner is placed, but the spawner has expired
+  expired-spawner: "&c(!) This spawner has expired, you are unable to place it!"
+  # The message sent when a player tries to place a spawner with no expire time but expire and block-no-expire are both enabled
+  no-expire-spawner-blocked: "&c(!) Spawners with no expire time are not usable!"
+  # the message sent when a player tries to place a spawner but the spawner lock is enabled
+  lock-enabled: "&c(!) Spawner lock is enabled! You are not allowed to place spawners while lock is enabled."
+  # This message is only applicable if the directly-to-inventory option is enabled. It will check to see if the players
+  # inventory is full before giving them the spawner
+  inventory-full: "&c(!) Your inventory is full! Clear some space before mining this spawner."
+  # When a player without the command permission tries to use any of the /spawner commands
+  command-no-perm: "&c(!) You lack the permission required to use this command!"
+  # When the /spawner command is used incorrectly
+  incorrect-usage: "&c(!) Incorrect /spawner command usage."
+  # The messages sent to the command sender / spawner receiver when the /spawner give command is used
+  give-spawner-sender: "&7%amount%x %type% spawners given to %player%"
+  give-spawner-receiver: "&7You have received &f%amount%x &e&l%type% &7spawners!"
+  # The messages sent to the command sender / spawner receivers when the /spawner all command is used
+  all-spawner-sender: "&7%amount%x %type% spawners given to ALL online players"
+  all-spawner-receiver: "&7You have received &f%amount%x &e&l%type% &7spawners!"
+  # When the player tries to mine a spawner, but doesn't have enough money (requires tax enabled)
+  not-enough-money: "&c(!) Failed to mine this spawner! Your Balance: %balance% Cost: %cost%"
+  # When the player tries to mine a spawner and has enough money (requires tax enabled)
+  has-enough-money: "&cSpawner Tax (-$%cost%)"
+  # The message sent from /spawner and /spawner help
+  command:
+    - "&8&m------------&8[&2&lSPAWNER COMMAND&8]&m------------"
+    - "&7<> &8- &fRequired Parameter"
+    - "&7[] &8- &fOptional Parameter"
+    - "&8&m-------------------------------------------"
+    - "&7/spawner &8- &fShows this message"
+    - "&7/spawner reload &8- Reloads the config"
+    - "&7/spawner help &8- &fShows this message"
+    - "&7/spawner list &8- &fShows all the possible spawner types"
+    - "&7/spawner give <player> <type> [amount] &8- &fGives target player a spawner of type"
+    - "&7/spawner all <type> [amount] &8- &fGives ALL online players type spawner"
+    - "&8&m-------------------------------------------"
+  # the message sent from /spawner types, the %types% variable MUST be present for the message to format correctly
+  list: "&fSpawner Types&8: %types%"
+  # The message sent when spawner lifetime is checked by right clicking a spawner with a watch
+  lifetime: "&fSpawner Lifetime&8: &6%time%"

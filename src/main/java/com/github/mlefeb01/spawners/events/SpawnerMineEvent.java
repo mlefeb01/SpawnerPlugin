@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 /**
  * Event fired when a player mines a spawner and the spawner should be dropped
  */
-public class SpawnerMineEvent extends PlayerSpawnerEvent {
+public final class SpawnerMineEvent extends PlayerSpawnerEvent {
     private EntityType spawnerType;
     private double tax;
     private double chanceToMine;

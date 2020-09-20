@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 /**
  * Event fired when a player attempts to change a spawner with a mob egg
  */
-public class SpawnerChangeEvent extends PlayerSpawnerEvent {
+public final class SpawnerChangeEvent extends PlayerSpawnerEvent {
     private EntityType type;
 
     /**

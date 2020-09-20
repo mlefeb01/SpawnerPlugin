@@ -8,7 +8,7 @@ import org.bukkit.event.HandlerList;
 /**
  * Event fired when a spawner is destroyed via explosion (e.g. - TNT, creeper, etc.)
  */
-public class SpawnerExplodeEvent extends Event {
+public final class SpawnerExplodeEvent extends Event {
     private EntityType spawnerType;
     private final Entity explodingEntity;
     private double chance;

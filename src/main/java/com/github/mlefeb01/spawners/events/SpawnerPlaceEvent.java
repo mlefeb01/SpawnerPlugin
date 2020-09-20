@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 /**
  * Event fired when a player places a spawner
  */
-public class SpawnerPlaceEvent extends PlayerSpawnerEvent {
+public final class SpawnerPlaceEvent extends PlayerSpawnerEvent {
     private EntityType spawnerType;
 
     /**

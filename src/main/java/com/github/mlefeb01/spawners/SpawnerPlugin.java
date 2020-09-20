@@ -1,70 +1,58 @@
 package com.github.mlefeb01.spawners;
 
-import com.github.mlefeb01.spawners.handlers.SpawnerHandler;
-import com.github.mlefeb01.spawners.utils.LocationAdapter;
+import com.github.mlefeb01.spawners.command.SpawnerCommand;
+import com.github.mlefeb01.spawners.config.ConfigYml;
+import com.github.mlefeb01.spawners.listener.SpawnerListener;
+import com.github.mlefeb01.spawners.util.Constants;
+import com.github.mlefeb01.spigotutils.api.adapters.LocationAdapter;
+import com.github.mlefeb01.spigotutils.api.utils.FileUtils;
+import com.github.mlefeb01.spigotutils.api.utils.TextUtils;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import de.tr7zw.changeme.nbtapi.NBTItem;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Minecraft Plugin that allows for mining spawners, exploding spawners, spawner tax, spawner expire, spawner lifetime, and more
- * @author Matt Lefebvre (github.com/mlefeb01)
- */
-public class SpawnerPlugin extends JavaPlugin {
-    private final Gson gson = new GsonBuilder()
-            .registerTypeAdapter(Location.class, new LocationAdapter())
-            .enableComplexMapKeySerialization()
-            .setPrettyPrinting()
-            .create();
-    private final FileManager fileManager = new FileManager(this);
-    private final DataManager dataManager = new DataManager(this, fileManager);
+public final class SpawnerPlugin extends JavaPlugin {
+    private final Gson gson = new GsonBuilder().registerTypeAdapter(Location.class, new LocationAdapter()).enableComplexMapKeySerialization().setPrettyPrinting().create();
+    private final ConfigYml configYml = new ConfigYml(this);
+    private final Map<Location, Long> spawnerLifetime = new HashMap<>();
     private static SpawnerAPI spawnerAPI;
 
     @Override
     public void onEnable() {
-        // Initialize plugin directory/files
-        fileManager.fileSetup();
+        configYml.load();
 
-        // Loads important config data
-        dataManager.initializeData(fileManager.getConfigYml(), gson);
+        FileUtils.createFile(this, getDataFolder().toPath(), "spawners.json");
+        spawnerLifetime.putAll(FileUtils.loadMap(gson, getDataFolder().toPath().resolve("spawners.json"), new TypeToken<HashMap<Location, Long>>(){}));
 
-        // Create Listener/Command classes
-        final SpawnerHandler spawnerHandler = new SpawnerHandler(
-                fileManager,
-                dataManager,
-                dataManager.getSpawnerTypes(),
-                fileManager.getConfigYml(),
-                dataManager.getEconomy(),
-                dataManager.getSpawnerTax(),
-                dataManager.getDropChances(),
-                dataManager.getExpireFormat(),
-                dataManager.getSpawnerLifetime()
-        );
+        final Economy economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
+        getServer().getPluginManager().registerEvents(new SpawnerListener(configYml, spawnerLifetime, economy), this);
 
-        // Register Listeners
-        getServer().getPluginManager().registerEvents(spawnerHandler, this);
+        getCommand("spawner").setExecutor(new SpawnerCommand(configYml));
 
-        // Register Commands
-        getCommand("spawner").setExecutor(spawnerHandler);
+        spawnerAPI = new SpawnerAPI();
 
-        // Log to console that the spawner plugin has enabled!
         getLogger().info("SpawnerPlugin has been enabled!");
-
-        // API
-        spawnerAPI = new SpawnerAPI(fileManager.getConfigYml(), dataManager.getSpawnerLifetime());
     }
 
     @Override
     public void onDisable() {
-        // Log to console the spawner plugin has been disabled
+        FileUtils.saveMap(gson, getDataFolder().toPath().resolve("spawners.json"), spawnerLifetime);
+
         getLogger().info("SpawnerPlugin has been disabled!");
-        fileManager.saveMap(gson, fileManager.getJSONPath("spawners.json"), dataManager.getSpawnerLifetime());
     }
 
     public static SpawnerAPI getSpawnerAPI() {
@@ -72,13 +60,8 @@ public class SpawnerPlugin extends JavaPlugin {
     }
 
     public class SpawnerAPI {
-        private final FileConfiguration config;
-        private final Map<Location, Long> spawnerLifetime;
 
-        private SpawnerAPI(FileConfiguration config, Map<Location, Long> spawnerLifetime) {
-            this.config = config;
-            this.spawnerLifetime = spawnerLifetime;
-        }
+        private SpawnerAPI() {}
 
         public long getSpawnerLifetime(Location location) {
             return getSpawnerLifetime(location.getBlock());
@@ -86,7 +69,7 @@ public class SpawnerPlugin extends JavaPlugin {
 
         public long getSpawnerLifetime(Block block) {
             // Check if the lifetime feature is enabled
-            if (!config.getBoolean("spawners.lifetime")) {
+            if (!configYml.isExpireEnabled()) {
                 return -1;
             }
 
@@ -108,6 +91,40 @@ public class SpawnerPlugin extends JavaPlugin {
                 return System.currentTimeMillis() - time;
             }
         }
+
+        private long calculateExpireTime(long startTime) {
+            final long expireTime = configYml.isExpireEnabled() ? startTime + (configYml.getExpireTimeLimit() * 1000) : -1;
+            if (expireTime != -1 && configYml.isRoundNearestHour()) {
+                return expireTime - (expireTime % 3600000);
+            }
+            return expireTime;
+        }
+
+        public ItemStack createSpawner(EntityType spawned, long expireStartTime) {
+            final ItemStack spawner = new ItemStack(Material.MOB_SPAWNER, 1);
+            final ItemMeta meta = spawner.getItemMeta();
+
+            final long expireTime = calculateExpireTime(expireStartTime);
+
+            meta.setDisplayName(configYml.getSpawnerItemName().replace("%type%", TextUtils.formatEnumAsString(spawned)));
+            final String expirePlaceholder = configYml.getExpireTimeFormat().format(new Date(expireTime));
+            meta.setLore(configYml.getSpawnerItemLore().stream().map(str -> str.replace("%time%", expireTime == -1 ? "N/A" : expirePlaceholder)).collect(Collectors.toList()));
+            spawner.setItemMeta(meta);
+
+            final NBTItem finalSpawner = new NBTItem(spawner);
+            finalSpawner.setString(Constants.NBT_SPAWNER_TYPE, spawned.name());
+            finalSpawner.setLong(Constants.NBT_SPAWNER_EXPIRE, expireTime);
+            return finalSpawner.getItem();
+        }
+
+        public ItemStack createSpawner(EntityType spawned) {
+            return createSpawner(spawned, System.currentTimeMillis());
+        }
+
+        public boolean isCustomSpawner(ItemStack item) {
+            return item != null && new NBTItem(item).hasKey(Constants.NBT_SPAWNER_TYPE);
+        }
+
     }
 
 }
