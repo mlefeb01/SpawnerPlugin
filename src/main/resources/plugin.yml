@@ -1,5 +1,5 @@
 name: SpawnerPlugin
-version: 1.0
+version: 1.1
 main: com.github.mlefeb01.spawners.SpawnerPlugin
 author: Matt Lefebvre (github.com/mlefeb01)
 depend: [Vault]
